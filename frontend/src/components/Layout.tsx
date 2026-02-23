@@ -1,6 +1,7 @@
 import { NavLink, Link } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { canManageAccounts } from '../utils/roleAccess';
 import {
   Menu as IconMenu,
   LayoutDashboard,
@@ -35,7 +36,9 @@ export default function Layout({ children }: LayoutProps) {
     { to: '/loan-payments', label: 'Loan Payments', icon: CreditCard },
     { to: '/lto-registration', label: 'LTO Registration', icon: BadgeCheck },
     { to: '/presentation', label: 'Presentation', icon: Monitor },
-    { to: '/accounts', label: 'Accounts (HR)', icon: Users }
+    ...(user && canManageAccounts(user.role) 
+      ? [{ to: '/accounts', label: 'Account Management', icon: Users }]
+      : [])
   ];
 
   const sidebarWidth = collapsed ? '72px' : '240px';

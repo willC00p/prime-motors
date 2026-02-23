@@ -23,6 +23,7 @@ function App() {
   const inventoryRoles: UserRole[] = ['gm', 'ceo', 'nsm', 'purchasing', 'accounting', 'finance', 'audit', 'branch'];
   const salesRoles: UserRole[] = ['gm', 'ceo', 'nsm', 'accounting', 'finance', 'audit', 'branch'];
   const managementRoles: UserRole[] = ['gm', 'ceo', 'nsm'];
+  const accountManagementRoles: UserRole[] = ['gm', 'ceo', 'nsm', 'accounting', 'finance'];
   const purchasingRoles: UserRole[] = ['gm', 'ceo', 'nsm', 'purchasing'];
   // financeRoles removed — loan-payments route is accessible to all authenticated users now
   const dashboardRoles: UserRole[] = ['gm', 'ceo', 'nsm', 'accounting', 'finance', 'audit'];
@@ -164,7 +165,7 @@ function App() {
               path="accounts"
               element={
                 <ProtectedRoute
-                  allowedRoles={managementRoles}
+                  allowedRoles={accountManagementRoles}
                   permission="management"
                   requiresAllBranches
                 >

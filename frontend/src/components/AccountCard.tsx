@@ -9,7 +9,6 @@ interface AccountCardProps {
   onResetPassword: (id: number) => void;
   onToggleStatus: (id: number, currentStatus: boolean) => void;
   onDelete: (id: number) => void;
-  branchMap?: Map<number, string>;
 }
 
 export default function AccountCard({
@@ -19,8 +18,7 @@ export default function AccountCard({
   onEdit,
   onResetPassword,
   onToggleStatus,
-  onDelete,
-  branchMap
+  onDelete
 }: AccountCardProps) {
   const getRoleColor = (role: string) => {
     const colors: Record<string, { bg: string; text: string }> = {
