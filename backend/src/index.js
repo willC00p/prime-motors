@@ -32,6 +32,7 @@ const loanPayments_1 = __importDefault(require("./routes/loanPayments"));
 const ltoRegistration_1 = __importDefault(require("./routes/ltoRegistration"));
 const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const reports_1 = __importDefault(require("./routes/reports"));
+const accounts_1 = __importDefault(require("./routes/accounts"));
 const salesController_1 = require("./controllers/salesController");
 console.log('[Bootstrap] typeof salesRouter:', typeof sales_1.default);
 console.log('[Bootstrap] typeof updateSale:', typeof salesController_1.updateSale);
@@ -43,18 +44,19 @@ const app = (0, express_1.default)();
 const port = process.env.PORT || 4000;
 // Middleware
 // Configure CORS to allow file uploads from frontend
-app.use((0, cors_1.default)({
-    origin: [
-        'https://prime-motors-frontend.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:5173',
-        process.env.FRONTEND_URL || 'https://prime-motors-frontend.vercel.app'
-    ],
+const corsOptions = {
+    origin: (origin, callback) => {
+        // Allow all origins for now
+        callback(null, true);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    maxAge: 86400
-}));
+    exposedHeaders: ['Content-Type', 'Authorization'],
+    maxAge: 86400,
+    optionsSuccessStatus: 200
+};
+app.use((0, cors_1.default)(corsOptions));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 // Basic route for testing
@@ -91,6 +93,8 @@ app.use((req, res, next) => {
 const apiRouter = express_1.default.Router();
 // Auth routes
 apiRouter.use('/auth', authRoutes_1.default);
+// Account routes (HR management)
+apiRouter.use('/accounts', accounts_1.default);
 // Core routes
 apiRouter.use('/inventory', inventory_1.default);
 apiRouter.use('/po', po_1.default);
@@ -108,6 +112,8 @@ apiRouter.use('/models', models_1.default);
 // Import routes (order matters)
 apiRouter.use('/import/sales', salesImport_1.default); // Must come before general /import
 apiRouter.use('/import', import_1.default);
+// OPTIONS handler for preflight requests
+app.options('*', (0, cors_1.default)(corsOptions));
 // Mount all routes under /api
 app.use('/api', apiRouter);
 // Hotfix: ensure PUT /api/sales/:id is always handled even if router ordering changes

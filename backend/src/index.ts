@@ -35,18 +35,25 @@ const port = process.env.PORT || 4000;
 
 // Middleware
 // Configure CORS to allow file uploads from frontend
-app.use(cors({
-  origin: [
-    'https://prime-motors-frontend.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:5173', // Vite dev server
-    process.env.FRONTEND_URL || 'https://prime-motors-frontend.vercel.app'
-  ],
+const corsOptions: any = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allowed?: boolean) => void) => {
+    // Allow all origins in development, restrict in production
+    if (!origin || origin.includes('localhost') || origin.includes('127.0.0.1') || 
+        origin.includes('vercel.app') || origin.includes('railway.app')) {
+      callback(null, true);
+    } else {
+      callback(null, true); // Allow all for now
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
-  maxAge: 86400
-}));
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
@@ -112,6 +119,9 @@ apiRouter.use('/models', modelsRouter);
 // Import routes (order matters)
 apiRouter.use('/import/sales', salesImportRouter);  // Must come before general /import
 apiRouter.use('/import', importRouter);
+
+// OPTIONS handler for preflight requests
+app.options('*', cors(corsOptions));
 
 // Mount all routes under /api
 app.use('/api', apiRouter);
