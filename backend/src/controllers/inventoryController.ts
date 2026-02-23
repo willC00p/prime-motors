@@ -241,9 +241,9 @@ export async function createInventory(req: Request, res: Response) {
     };
 
     // Handle SI photo if uploaded
-    if ((req as any).file) {
-      data.si_photo_key = (req as any).file.filename;
-      data.si_photo_url = `/uploads/si_photos/${(req as any).file.filename}`;
+    if ((req as any).uploadedSiPhotoFilename) {
+      data.si_photo_key = (req as any).uploadedSiPhotoFilename;
+      data.si_photo_url = `/uploads/si_photos/${(req as any).uploadedSiPhotoFilename}`;
     }
 
     // Remove undefined fields
