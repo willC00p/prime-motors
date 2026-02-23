@@ -63,7 +63,6 @@ app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 // Initialize express-fileupload for handling multipart/form-data
 app.use((0, express_fileupload_1.default)({
     limits: { fileSize: 50 * 1024 * 1024 },
-    tempDir: '/tmp',
 }));
 // Basic route for testing
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));

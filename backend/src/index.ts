@@ -60,7 +60,6 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Initialize express-fileupload for handling multipart/form-data
 app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
-  tempDir: '/tmp',
 }));
 
 // Basic route for testing
