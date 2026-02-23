@@ -38,6 +38,7 @@ export default function AccountManagement() {
   const [form, setForm] = useState<CreateAccountRequest>(emptyAccountForm);
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [resetPassword, setResetPassword] = useState('');
+  const [showResetPasswordModal, setShowResetPasswordModal] = useState(false);
 
   // Check if user has account management access
   const canManage = user ? canManageAccounts(user.role) : false;
@@ -208,6 +209,7 @@ export default function AccountManagement() {
       setSuccess('Password updated successfully');
       setResetPassword('');
       setEditingId(null);
+      setShowResetPasswordModal(false);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update password');
@@ -444,7 +446,7 @@ export default function AccountManagement() {
         )}
 
         {/* Password Reset Modal */}
-        {editingId && resetPassword !== '' && (
+        {editingId && showResetPasswordModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-lg p-6 max-w-md w-full">
               <h2 className="text-2xl font-bold mb-4 text-gray-800">Reset Password</h2>
@@ -474,6 +476,7 @@ export default function AccountManagement() {
                     onClick={() => {
                       setResetPassword('');
                       setEditingId(null);
+                      setShowResetPasswordModal(false);
                     }}
                     className="flex-1 bg-gray-400 hover:bg-gray-500 text-white py-2 rounded-lg transition"
                   >
@@ -587,6 +590,7 @@ export default function AccountManagement() {
                         <button
                           onClick={() => {
                             setEditingId(account.id);
+                            setShowResetPasswordModal(true);
                             setResetPassword('');
                           }}
                           className="p-2 text-yellow-600 hover:bg-yellow-100 rounded-lg transition"
