@@ -6,6 +6,9 @@ const FULL_ACCESS_ROLES = ['gm', 'ceo', 'nsm'] as const;
 // Users with access to all branches
 const ALL_BRANCHES_ACCESS = ['gm', 'ceo', 'nsm', 'purchasing', 'accounting', 'finance', 'audit'] as const;
 
+// Users who can manage accounts
+const ACCOUNT_MANAGEMENT_ROLES = ['gm', 'ceo', 'nsm', 'accounting', 'finance'] as const;
+
 // Define permissions for each role
 export const ROLE_PERMISSIONS = {
   gm: {
@@ -15,6 +18,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: true,
     reports: true,
+    accounts: true,
     allBranches: true,
   },
   ceo: {
@@ -24,6 +28,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: true,
     reports: true,
+    accounts: true,
     allBranches: true,
   },
   nsm: {
@@ -33,6 +38,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: true,
     reports: true,
+    accounts: true,
     allBranches: true,
   },
   purchasing: {
@@ -42,6 +48,7 @@ export const ROLE_PERMISSIONS = {
     finance: false,
     management: false,
     reports: true,
+    accounts: false,
     allBranches: true,
   },
   accounting: {
@@ -51,6 +58,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: false,
     reports: true,
+    accounts: true,
     allBranches: true,
   },
   finance: {
@@ -60,6 +68,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: false,
     reports: true,
+    accounts: true,
     allBranches: true,
   },
   audit: {
@@ -69,6 +78,7 @@ export const ROLE_PERMISSIONS = {
     finance: true,
     management: false,
     reports: true,
+    accounts: false,
     allBranches: true,
   },
   branch: {
@@ -78,6 +88,7 @@ export const ROLE_PERMISSIONS = {
     finance: true, // Allow access to loan payments
     management: false,
     reports: false, // Disable dashboard access
+    accounts: false,
     allBranches: false,
   },
 } as const;
@@ -88,6 +99,14 @@ export const hasFullAccess = (role: UserRole): boolean => {
 
 export const canAccessAllBranches = (role: UserRole): boolean => {
   return ALL_BRANCHES_ACCESS.includes(role as any);
+};
+
+export const canManageAccounts = (role: UserRole): boolean => {
+  return ACCOUNT_MANAGEMENT_ROLES.includes(role as any);
+};
+
+export const hasAccountsAccess = (role: UserRole): boolean => {
+  return ROLE_PERMISSIONS[role].accounts;
 };
 
 export const hasInventoryAccess = (role: UserRole, userBranchId?: number, itemBranchId?: number): boolean => {

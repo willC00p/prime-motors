@@ -33,8 +33,9 @@ export default function Layout({ children }: LayoutProps) {
     { to: '/management', label: 'Branch/Models', icon: Building2 },
     { to: '/suppliers', label: 'Suppliers', icon: Truck },
     { to: '/loan-payments', label: 'Loan Payments', icon: CreditCard },
-    { to: '/lto-registration', label: 'LTO Registration', icon: BadgeCheck }
-    ,{ to: '/presentation', label: 'Presentation', icon: Monitor }
+    { to: '/lto-registration', label: 'LTO Registration', icon: BadgeCheck },
+    { to: '/presentation', label: 'Presentation', icon: Monitor },
+    { to: '/accounts', label: 'Accounts (HR)', icon: Users }
   ];
 
   const sidebarWidth = collapsed ? '72px' : '240px';

@@ -15,6 +15,7 @@ import LoanPayments from './pages/LoanPayments';
 import LTORegistrationManagement from './pages/LTORegistrationManagement';
 import Reports from './pages/Reports';
 import Presentation from './pages/Presentation';
+import AccountManagement from './pages/AccountManagement';
 import type { UserRole } from './types/auth';
 
 function App() {
@@ -156,6 +157,18 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Presentation />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="accounts"
+              element={
+                <ProtectedRoute
+                  allowedRoles={managementRoles}
+                  permission="management"
+                  requiresAllBranches
+                >
+                  <AccountManagement />
                 </ProtectedRoute>
               }
             />
