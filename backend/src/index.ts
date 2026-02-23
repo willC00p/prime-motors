@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import fileUpload from 'express-fileupload';
 import prisma from './lib/prisma';
 
 import inventoryRouter from './routes/inventory';
@@ -56,6 +57,11 @@ const corsOptions: any = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Initialize express-fileupload for handling multipart/form-data
+app.use(fileUpload({
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
+  tempDir: '/tmp',
+}));
 
 // Basic route for testing
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
