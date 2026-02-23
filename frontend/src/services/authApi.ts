@@ -50,4 +50,10 @@ export const authApi = {
       }
     });
   },
+
+  getRotationPassword: async (): Promise<{ password: string }> => {
+    return fetchApi('/auth/rotation-password', {
+      method: 'GET',
+    });
+  },
 };

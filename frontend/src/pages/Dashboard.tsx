@@ -6,6 +6,9 @@ import {
 } from 'recharts';
 import DetailModal from '../components/DetailModal';
 import { fetchApi } from '../services/api';
+import { authApi } from '../services/authApi';
+import { useAuth } from '../contexts/AuthContext';
+import { FaLock, FaCopy } from 'react-icons/fa';
 
 interface DashboardData {
   topAgents: Array<{agent: string; amount: number}>;
@@ -64,6 +67,7 @@ type ModalContent = {
 };
 
 export default function Dashboard() {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -72,6 +76,8 @@ export default function Dashboard() {
   const [selectedBranch, setSelectedBranch] = useState<string>('all');
   // Start dashboard in presentation mode by default; user can toggle back.
   const [presentationMode, setPresentationMode] = useState<boolean>(true);
+  const [rotationPassword, setRotationPassword] = useState<string | null>(null);
+  const [copiedToClipboard, setCopiedToClipboard] = useState(false);
   const [data, setData] = useState<DashboardData>({
     topAgents: [],
     topFmo: [],
@@ -109,7 +115,20 @@ export default function Dashboard() {
       }
     }
     fetchData();
-  }, []);
+
+    // Fetch rotation password if user is NSM or accounting
+    if (user?.role === 'nsm' || user?.role === 'accounting') {
+      async function fetchPassword() {
+        try {
+          const response = await authApi.getRotationPassword();
+          setRotationPassword(response.password);
+        } catch (e) {
+          console.error('Failed to fetch rotation password:', e);
+        }
+      }
+      fetchPassword();
+    }
+  }, [user]);
 
   // Derive available months from branchMonthStats and default to latest
   const availableMonths = useMemo(() => {
@@ -194,6 +213,40 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Rotation Password Display (NSM/Accounting only) */}
+      {(user?.role === 'nsm' || user?.role === 'accounting') && rotationPassword && (
+        <div className="bg-amber-50 border-2 border-amber-400 rounded-lg p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FaLock className="text-amber-600 text-lg" />
+              <div>
+                <p className="text-sm font-semibold text-gray-700">Today's Edit Password</p>
+                <p className="text-xs text-gray-600 mt-1">Use this password when editing inventory and sales entries</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="bg-white px-4 py-2 rounded-lg border border-amber-300">
+                <p className="text-2xl font-bold text-amber-700 font-mono tracking-wider">{rotationPassword}</p>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(rotationPassword);
+                  setCopiedToClipboard(true);
+                  setTimeout(() => setCopiedToClipboard(false), 2000);
+                }}
+                className="p-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+                title="Copy password to clipboard"
+              >
+                <FaCopy />
+              </button>
+            </div>
+          </div>
+          {copiedToClipboard && (
+            <p className="text-xs text-amber-700 mt-2">✓ Copied to clipboard!</p>
+          )}
+        </div>
+      )}
       
       {modalContent && (
         <DetailModal

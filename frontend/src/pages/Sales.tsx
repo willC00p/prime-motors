@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useToast } from '../components/ToastProvider';
 import { modelLoanTemplateApi } from '../services/modelLoanTemplateApi';
+import { PasswordModal } from '../components/PasswordModal';
 import type { ModelLoanTemplate } from '../types/LoanTemplate';
 
 // API Base URL from environment
@@ -226,6 +227,10 @@ const Sales: React.FC = () => {
   // Edit modal state
   const [editOpen, setEditOpen] = useState(false);
   const [editSale, setEditSale] = useState<Partial<Sale> & { id?: number } | null>(null);
+  
+  // Password modal states
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [pendingSubmission, setPendingSubmission] = useState<((password: string) => Promise<void>) | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -366,9 +371,18 @@ const Sales: React.FC = () => {
 
   const submitEdit = async () => {
     if (!editSale?.id) return;
+    
+    // Show password modal instead of submitting directly
+    setPendingSubmission(() => doSubmitEdit);
+    setPasswordModalOpen(true);
+  };
+
+  const doSubmitEdit = async (editPassword: string = '') => {
+    if (!editSale?.id) return;
     try {
       setLoading(true);
       const payload = {
+        editPassword, // Include password in payload
         branch_id: editSale.branch_id,
         date_sold: editSale.date_sold,
         category_of_sales: editSale.category_of_sales || null,
@@ -399,7 +413,10 @@ const Sales: React.FC = () => {
       };
       const res = await fetch(`${API_URL}/api/sales/${editSale.id}` , {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+        },
         body: JSON.stringify(payload)
       });
       if (!res.ok) throw new Error(await res.text());
@@ -407,8 +424,14 @@ const Sales: React.FC = () => {
       setSales(prev => prev.map(s => s.id === updated.id ? updated : s));
       setEditOpen(false);
       setEditSale(null);
+      showToast({ type: 'success', message: 'Sale updated successfully' });
     } catch (e) {
-      showToast({ type: 'error', message: 'Failed to update sale: ' + (e instanceof Error ? e.message : String(e)) });
+      const message = e instanceof Error ? e.message : String(e);
+      showToast({ type: 'error', message: 'Failed to update sale: ' + message });
+      if (message.includes('password') || message.includes('403')) {
+        // Password error - keep modal open for retry
+        throw new Error('Invalid edit password. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -1961,6 +1984,21 @@ const Sales: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Password Modal for edit operations */}
+      <PasswordModal
+        isOpen={passwordModalOpen}
+        onClose={() => {
+          setPasswordModalOpen(false);
+          setPendingSubmission(null);
+        }}
+        onSubmit={async (password: string) => {
+          if (pendingSubmission) {
+            await pendingSubmission(password);
+          }
+        }}
+        action="edit"
+      />
     </div>
   );
 };

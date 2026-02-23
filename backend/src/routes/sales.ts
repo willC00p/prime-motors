@@ -5,6 +5,7 @@ import { ParsedQs } from 'qs';
 import { listSales, getSale, createSale, updateDelivery } from '../controllers/salesController';
 import prisma from '../lib/prisma';
 import { catchAsync } from '../utils/catchAsync';
+import { authenticateToken, validateEditPassword } from '../utils/auth';
 
 const router = Router();
 
@@ -22,14 +23,14 @@ router.get('/', catchAsync(listSales));
 // Get a single sales report by ID
 router.get('/:id', catchAsync(getSale));
 
-// Create a new sales report
-router.post('/', catchAsync(createSale));
+// Create a new sales report - requires password validation
+router.post('/', authenticateToken, validateEditPassword, catchAsync(createSale));
 
 // Update delivery status/date for a sale (place specific route before generic id)
 router.put('/:id/delivery', (req, res, next) => { console.log('[Sales Router] PUT /:id/delivery hit', req.params); next(); }, catchAsync(updateDelivery));
 
-// Update a sale by id (inline handler to bypass missing compiled export)
-router.put('/:id', (req, res, next) => { console.log('[Sales Router] PUT /:id hit', req.params); next(); }, catchAsync(async (req, res) => {
+// Update a sale by id (inline handler to bypass missing compiled export) - requires password validation
+router.put('/:id', authenticateToken, validateEditPassword, (req, res, next) => { console.log('[Sales Router] PUT /:id hit', req.params); next(); }, catchAsync(async (req, res) => {
 	const { id } = req.params;
 	if (!id || isNaN(Number(id))) {
 		res.status(400).json({ error: 'Invalid id parameter' });

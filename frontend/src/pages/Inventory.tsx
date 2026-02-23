@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useToast } from '../components/ToastProvider';
 import { api } from '../services/api';
+import { PasswordModal } from '../components/PasswordModal';
 
 export interface Branch { id: number; name: string; address: string; }
 interface Item {
@@ -132,6 +133,10 @@ const Inventory: React.FC = () => {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('all-time');
   const [sortField, setSortField] = useState<string>('');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  
+  // Password modal states
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [pendingSubmission, setPendingSubmission] = useState<(() => Promise<void>) | null>(null);
   
   // Constants for inventory status
   const LOW_STOCK_THRESHOLD = 5;
@@ -1083,11 +1088,25 @@ const Inventory: React.FC = () => {
     return sum + unitCount;
   }, 0);
 
-  // Submit form
+  // Submit form - now shows password modal
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    
+    // Validate required fields first
+    if (!form.branch_id || !form.item_id) {
+      setError('Branch and Item are required');
+      return;
+    }
+    
+    // Show password modal with a callback that includes the password
+    setPendingSubmission(() => async (password: string) => doSubmit(password));
+    setPasswordModalOpen(true);
+  }
+
+  // Actual submission logic that accepts password
+  async function doSubmit(editPassword: string = '') {
     try {
       // Remove fields that belong to items table
       const { color, engine_no, chassis_no, si_photo_file, ...formData } = form;
@@ -1101,6 +1120,7 @@ const Inventory: React.FC = () => {
 
       const payload = {
         ...formData,
+        editPassword, // Include the password in the payload
         color: typeof form.color === 'string' ? form.color : '', // Always send color as string
         branch_id: formData.branch_id ? Number(formData.branch_id) : undefined,
         item_id: formData.item_id ? Number(formData.item_id) : undefined,
@@ -1183,6 +1203,9 @@ const Inventory: React.FC = () => {
       const msg = e instanceof Error ? e.message : String(e);
       if (/prisma/i.test(msg) || /P200|PrismaClientKnownRequestError/.test(msg)) {
         return 'Server validation failed — please check required fields across tabs and try again.';
+      }
+      if (/invalid.*password/i.test(msg) || /Edit password/i.test(msg)) {
+        return 'Invalid edit password. Please try again.';
       }
       if (msg.length > 300) return msg.slice(0, 300) + '...';
       return msg || 'Failed to save inventory';
@@ -2344,6 +2367,21 @@ const Inventory: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Password Modal for edit/create operations */}
+      <PasswordModal
+        isOpen={passwordModalOpen}
+        onClose={() => {
+          setPasswordModalOpen(false);
+          setPendingSubmission(null);
+        }}
+        onSubmit={async (password: string) => {
+          if (pendingSubmission) {
+            await pendingSubmission(password);
+          }
+        }}
+        action={editId ? 'edit' : 'create'}
+      />
     </div>
   );
 }
