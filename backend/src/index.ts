@@ -34,9 +34,21 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 // Middleware
-app.use(cors());
+// Configure CORS to allow file uploads from frontend
+app.use(cors({
+  origin: [
+    'https://prime-motors-frontend.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:5173', // Vite dev server
+    process.env.FRONTEND_URL || 'https://prime-motors-frontend.vercel.app'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400
+}));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Basic route for testing
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
