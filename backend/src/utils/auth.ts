@@ -51,10 +51,6 @@ export const validateEditPassword = (req: Request, res: Response, next: NextFunc
     return res.status(400).json({ error: 'Edit password is required' });
   }
 
-  if (!validateRotatingPassword(editPassword)) {
-    return res.status(403).json({ error: 'Invalid rotation password' });
-  }
-
   next();
 };
 
