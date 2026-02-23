@@ -62,6 +62,9 @@ app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit
 }));
 
+// Serve uploaded files statically
+app.use('/uploads', express.static('uploads'));
+
 // Basic route for testing
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
 app.post('/api/echo', (req: Request, res: Response) => {
