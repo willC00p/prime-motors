@@ -240,6 +240,12 @@ export async function createInventory(req: Request, res: Response) {
       color: color ?? null,
     };
 
+    // Handle SI photo if uploaded
+    if ((req as any).file) {
+      data.si_photo_key = (req as any).file.filename;
+      data.si_photo_url = `/uploads/si_photos/${(req as any).file.filename}`;
+    }
+
     // Remove undefined fields
     Object.keys(data).forEach((k) => data[k] === undefined && delete data[k]);
 
