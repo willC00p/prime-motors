@@ -33,8 +33,10 @@ export const deleteAllModels = async (req: Request, res: Response) => {
       sales_deleted: 0,
       vehicle_units_deleted: 0,
       inventory_deleted: 0,
+      transferred_history_deleted: 0,
       purchase_order_items_deleted: 0,
       purchase_orders_deleted: 0,
+      model_loan_templates_deleted: 0,
       models_deleted: 0
     };
 
@@ -59,17 +61,27 @@ export const deleteAllModels = async (req: Request, res: Response) => {
     results.inventory_deleted = inventoryResult.count;
     console.log(`Deleted ${results.inventory_deleted} inventory records`);
 
-    // 5. Delete purchase order items
+    // 5. Delete transferred history (references item_id)
+    const transferredHistoryResult = await prisma.transferred_history.deleteMany({});
+    results.transferred_history_deleted = transferredHistoryResult.count;
+    console.log(`Deleted ${results.transferred_history_deleted} transferred history records`);
+
+    // 6. Delete purchase order items
     const poItemsResult = await prisma.purchase_order_items.deleteMany({});
     results.purchase_order_items_deleted = poItemsResult.count;
     console.log(`Deleted ${results.purchase_order_items_deleted} PO items`);
 
-    // 6. Delete purchase orders
+    // 7. Delete purchase orders
     const poResult = await prisma.purchase_orders.deleteMany({});
     results.purchase_orders_deleted = poResult.count;
     console.log(`Deleted ${results.purchase_orders_deleted} purchase orders`);
 
-    // 7. Finally delete all models/items
+    // 8. Delete model loan templates
+    const loanTemplatesResult = await prisma.model_loan_templates.deleteMany({});
+    results.model_loan_templates_deleted = loanTemplatesResult.count;
+    console.log(`Deleted ${results.model_loan_templates_deleted} model loan templates`);
+
+    // 9. Finally delete all models/items
     const modelsResult = await prisma.items.deleteMany({});
     results.models_deleted = modelsResult.count;
     console.log(`Deleted ${results.models_deleted} models`);
