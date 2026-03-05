@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import prisma from './lib/prisma';
+import path from 'path';
 
 import inventoryRouter from './routes/inventory';
 import poRouter from './routes/po';
@@ -38,6 +39,9 @@ const port = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Static file serving for uploads
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Basic route for testing
 app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
