@@ -10,35 +10,35 @@ export const clearData = async (req: Request, res: Response) => {
     // Temporary dev feature - no auth required for now
     console.log(`[ADMIN] Data clear operation initiated`);
 
-    // Delete data in order of dependencies
+    // Delete data in order of dependencies (respecting foreign key constraints)
     const results = {
-      vehicle_units_deleted: 0,
-      inventory_deleted: 0,
       sales_items_deleted: 0,
       sales_deleted: 0,
+      vehicle_units_deleted: 0,
+      inventory_deleted: 0,
       purchase_order_items_deleted: 0,
       purchase_orders_deleted: 0
     };
 
-    // 1. Delete vehicle units (depends on inventory)
-    const vehicleUnitsResult = await prisma.vehicle_units.deleteMany({});
-    results.vehicle_units_deleted = vehicleUnitsResult.count;
-    console.log(`Deleted ${results.vehicle_units_deleted} vehicle units`);
-
-    // 2. Delete inventory
-    const inventoryResult = await prisma.inventory_movements.deleteMany({});
-    results.inventory_deleted = inventoryResult.count;
-    console.log(`Deleted ${results.inventory_deleted} inventory records`);
-
-    // 3. Delete sales items first
+    // 1. Delete sales items first (references vehicle_units)
     const salesItemsResult = await prisma.sales_items.deleteMany({});
     results.sales_items_deleted = salesItemsResult.count;
     console.log(`Deleted ${results.sales_items_deleted} sales items`);
 
-    // 4. Delete sales
+    // 2. Delete sales
     const salesResult = await prisma.sales.deleteMany({});
     results.sales_deleted = salesResult.count;
     console.log(`Deleted ${results.sales_deleted} sales records`);
+
+    // 3. Delete vehicle units (after sales_items which reference them)
+    const vehicleUnitsResult = await prisma.vehicle_units.deleteMany({});
+    results.vehicle_units_deleted = vehicleUnitsResult.count;
+    console.log(`Deleted ${results.vehicle_units_deleted} vehicle units`);
+
+    // 4. Delete inventory
+    const inventoryResult = await prisma.inventory_movements.deleteMany({});
+    results.inventory_deleted = inventoryResult.count;
+    console.log(`Deleted ${results.inventory_deleted} inventory records`);
 
     // 5. Delete purchase order items
     const poItemsResult = await prisma.purchase_order_items.deleteMany({});
