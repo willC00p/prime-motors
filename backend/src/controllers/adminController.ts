@@ -28,14 +28,55 @@ export const deleteAllModels = async (req: Request, res: Response) => {
   try {
     console.log('[ADMIN] Delete all models initiated');
 
-    // Delete all models (items table)
-    const result = await prisma.items.deleteMany({});
-    
-    console.log(`Deleted ${result.count} models`);
+    const results = {
+      sales_items_deleted: 0,
+      sales_deleted: 0,
+      vehicle_units_deleted: 0,
+      inventory_deleted: 0,
+      purchase_order_items_deleted: 0,
+      purchase_orders_deleted: 0,
+      models_deleted: 0
+    };
+
+    // Delete in dependency order
+    // 1. Delete sales items first (references vehicle_units)
+    const salesItemsResult = await prisma.sales_items.deleteMany({});
+    results.sales_items_deleted = salesItemsResult.count;
+    console.log(`Deleted ${results.sales_items_deleted} sales items`);
+
+    // 2. Delete sales
+    const salesResult = await prisma.sales.deleteMany({});
+    results.sales_deleted = salesResult.count;
+    console.log(`Deleted ${results.sales_deleted} sales records`);
+
+    // 3. Delete vehicle units (references items)
+    const vehicleUnitsResult = await prisma.vehicle_units.deleteMany({});
+    results.vehicle_units_deleted = vehicleUnitsResult.count;
+    console.log(`Deleted ${results.vehicle_units_deleted} vehicle units`);
+
+    // 4. Delete inventory movements
+    const inventoryResult = await prisma.inventory_movements.deleteMany({});
+    results.inventory_deleted = inventoryResult.count;
+    console.log(`Deleted ${results.inventory_deleted} inventory records`);
+
+    // 5. Delete purchase order items
+    const poItemsResult = await prisma.purchase_order_items.deleteMany({});
+    results.purchase_order_items_deleted = poItemsResult.count;
+    console.log(`Deleted ${results.purchase_order_items_deleted} PO items`);
+
+    // 6. Delete purchase orders
+    const poResult = await prisma.purchase_orders.deleteMany({});
+    results.purchase_orders_deleted = poResult.count;
+    console.log(`Deleted ${results.purchase_orders_deleted} purchase orders`);
+
+    // 7. Finally delete all models/items
+    const modelsResult = await prisma.items.deleteMany({});
+    results.models_deleted = modelsResult.count;
+    console.log(`Deleted ${results.models_deleted} models`);
 
     res.json({
-      message: 'All models deleted successfully',
-      models_deleted: result.count
+      message: 'All models and dependencies deleted successfully',
+      ...results
     });
   } catch (error) {
     console.error('Error deleting models:', error);
