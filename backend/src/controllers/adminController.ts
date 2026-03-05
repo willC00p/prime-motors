@@ -7,47 +7,48 @@ import prisma from '../lib/prisma';
  */
 export const clearData = async (req: Request, res: Response) => {
   try {
-    // Check if user is admin (you can add role-based checks here)
-    const userId = (req as any).userId;
-    if (!userId) {
-      return res.status(401).json({ error: 'Unauthorized' });
-    }
-
-    console.log(`[ADMIN] ${userId} initiated data clear operation`);
+    // Temporary dev feature - no auth required for now
+    console.log(`[ADMIN] Data clear operation initiated`);
 
     // Delete data in order of dependencies
     const results = {
       vehicle_units_deleted: 0,
       inventory_deleted: 0,
+      sales_items_deleted: 0,
       sales_deleted: 0,
-      models_deleted: 0,
-      po_items_deleted: 0,
+      purchase_order_items_deleted: 0,
       purchase_orders_deleted: 0
     };
 
     // 1. Delete vehicle units (depends on inventory)
-    results.vehicle_units_deleted = await prisma.vehicle_units.deleteMany({});
+    const vehicleUnitsResult = await prisma.vehicle_units.deleteMany({});
+    results.vehicle_units_deleted = vehicleUnitsResult.count;
     console.log(`Deleted ${results.vehicle_units_deleted} vehicle units`);
 
     // 2. Delete inventory
-    results.inventory_deleted = await prisma.inventory_movements.deleteMany({});
+    const inventoryResult = await prisma.inventory_movements.deleteMany({});
+    results.inventory_deleted = inventoryResult.count;
     console.log(`Deleted ${results.inventory_deleted} inventory records`);
 
-    // 3. Delete sales
-    results.sales_deleted = await prisma.sales.deleteMany({});
+    // 3. Delete sales items first
+    const salesItemsResult = await prisma.sales_items.deleteMany({});
+    results.sales_items_deleted = salesItemsResult.count;
+    console.log(`Deleted ${results.sales_items_deleted} sales items`);
+
+    // 4. Delete sales
+    const salesResult = await prisma.sales.deleteMany({});
+    results.sales_deleted = salesResult.count;
     console.log(`Deleted ${results.sales_deleted} sales records`);
 
-    // 4. Delete PO items (depends on purchase orders)
-    results.po_items_deleted = await prisma.po_items.deleteMany({});
-    console.log(`Deleted ${results.po_items_deleted} PO items`);
+    // 5. Delete purchase order items
+    const poItemsResult = await prisma.purchase_order_items.deleteMany({});
+    results.purchase_order_items_deleted = poItemsResult.count;
+    console.log(`Deleted ${results.purchase_order_items_deleted} PO items`);
 
-    // 5. Delete purchase orders
-    results.purchase_orders_deleted = await prisma.purchase_orders.deleteMany({});
+    // 6. Delete purchase orders
+    const poResult = await prisma.purchase_orders.deleteMany({});
+    results.purchase_orders_deleted = poResult.count;
     console.log(`Deleted ${results.purchase_orders_deleted} purchase orders`);
-
-    // 6. Delete models
-    results.models_deleted = await prisma.models.deleteMany({});
-    console.log(`Deleted ${results.models_deleted} models`);
 
     res.json({
       message: 'Data cleared successfully',
