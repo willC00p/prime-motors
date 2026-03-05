@@ -92,11 +92,11 @@ interface ExcelRow {
 
 export const importSales = async (req: Request, res: Response) => {
     try {
-        if (!req.files || !req.files.file) {
+        if (!req.files || !('file' in (req.files as any))) {
             return res.status(400).json({ error: 'No file uploaded' });
         }
 
-        const file = req.files.file as UploadedFile;
+        const file = (req.files as any).file as UploadedFile;
         console.log('Received file:', file.name);
         const workbook = XLSX.read(file.data);
         console.log('Sheet names:', workbook.SheetNames);

@@ -80,11 +80,11 @@ export const importInventory = async (req: Request, res: Response) => {
       headers: req.headers
     });
     
-    if (!req.files || !('file' in req.files)) {
+    if (!req.files || !('file' in (req.files as any))) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const file = req.files.file as UploadedFile;
+    const file = (req.files as any).file as UploadedFile;
     console.log('Reading file from:', file.tempFilePath);
     const workbook = XLSX.readFile(file.tempFilePath);
     console.log('Workbook sheets:', workbook.SheetNames);
