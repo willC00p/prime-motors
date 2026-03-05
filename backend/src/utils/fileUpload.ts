@@ -1,4 +1,5 @@
-import multer from 'multer';
+import multer, { Express } from 'multer';
+import type { Request, Response } from 'express';
 import path from 'path';
 import fs from 'fs';
 
@@ -10,10 +11,10 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (req: Request, file: Express.Multer.File, cb: (error: Error | null, destination: string) => void) => {
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  filename: (req: Request, file: Express.Multer.File, cb: (error: Error | null, filename: string) => void) => {
     // Generate unique filename with timestamp
     const ext = path.extname(file.originalname);
     const name = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
@@ -21,7 +22,7 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req: any, file: any, cb: any) => {
+const fileFilter = (req: Request, file: Express.Multer.File, cb: (error: Error | null, acceptFile: boolean) => void) => {
   // Allow only image files
   const allowedMimes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf'];
   if (allowedMimes.includes(file.mimetype)) {
