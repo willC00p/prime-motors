@@ -7,57 +7,15 @@ import prisma from '../lib/prisma';
  */
 export const clearData = async (req: Request, res: Response) => {
   try {
-    // Temporary dev feature - no auth required for now
-    console.log(`[ADMIN] Data clear operation initiated`);
-
-    // Delete data in order of dependencies (respecting foreign key constraints)
-    const results = {
-      sales_items_deleted: 0,
-      sales_deleted: 0,
-      vehicle_units_deleted: 0,
-      inventory_deleted: 0,
-      purchase_order_items_deleted: 0,
-      purchase_orders_deleted: 0
-    };
-
-    // 1. Delete sales items first (references vehicle_units)
-    const salesItemsResult = await prisma.sales_items.deleteMany({});
-    results.sales_items_deleted = salesItemsResult.count;
-    console.log(`Deleted ${results.sales_items_deleted} sales items`);
-
-    // 2. Delete sales
-    const salesResult = await prisma.sales.deleteMany({});
-    results.sales_deleted = salesResult.count;
-    console.log(`Deleted ${results.sales_deleted} sales records`);
-
-    // 3. Delete vehicle units (after sales_items which reference them)
-    const vehicleUnitsResult = await prisma.vehicle_units.deleteMany({});
-    results.vehicle_units_deleted = vehicleUnitsResult.count;
-    console.log(`Deleted ${results.vehicle_units_deleted} vehicle units`);
-
-    // 4. Delete inventory
-    const inventoryResult = await prisma.inventory_movements.deleteMany({});
-    results.inventory_deleted = inventoryResult.count;
-    console.log(`Deleted ${results.inventory_deleted} inventory records`);
-
-    // 5. Delete purchase order items
-    const poItemsResult = await prisma.purchase_order_items.deleteMany({});
-    results.purchase_order_items_deleted = poItemsResult.count;
-    console.log(`Deleted ${results.purchase_order_items_deleted} PO items`);
-
-    // 6. Delete purchase orders
-    const poResult = await prisma.purchase_orders.deleteMany({});
-    results.purchase_orders_deleted = poResult.count;
-    console.log(`Deleted ${results.purchase_orders_deleted} purchase orders`);
-
-    res.json({
-      message: 'Data cleared successfully',
-      ...results
+    // This endpoint is currently disabled for security reasons
+    return res.status(403).json({ 
+      error: 'Endpoint disabled',
+      message: 'The data clear endpoint is currently disabled for security reasons.'
     });
   } catch (error) {
-    console.error('Error clearing data:', error);
+    console.error('Error:', error);
     res.status(500).json({ 
-      error: 'Failed to clear data',
+      error: 'Internal server error',
       detail: error instanceof Error ? error.message : 'Unknown error'
     });
   }
