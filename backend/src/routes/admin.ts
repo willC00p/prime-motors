@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { clearData } from '../controllers/adminController';
+import { clearData, deleteAllModels } from '../controllers/adminController';
 
 const router = Router();
 
@@ -9,5 +9,8 @@ const router = Router();
 
 // Clear all data (models, inventory, sales)
 router.post('/clear-data', clearData);
+
+// Delete all models
+router.post('/delete-all-models', deleteAllModels);
 
 export default router;

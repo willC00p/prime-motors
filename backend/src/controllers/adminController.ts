@@ -20,3 +20,28 @@ export const clearData = async (req: Request, res: Response) => {
     });
   }
 };
+
+/**
+ * Delete all motorcycle models
+ */
+export const deleteAllModels = async (req: Request, res: Response) => {
+  try {
+    console.log('[ADMIN] Delete all models initiated');
+
+    // Delete all models (items table)
+    const result = await prisma.items.deleteMany({});
+    
+    console.log(`Deleted ${result.count} models`);
+
+    res.json({
+      message: 'All models deleted successfully',
+      models_deleted: result.count
+    });
+  } catch (error) {
+    console.error('Error deleting models:', error);
+    res.status(500).json({ 
+      error: 'Failed to delete models',
+      detail: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+};
