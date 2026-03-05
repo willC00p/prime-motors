@@ -25,7 +25,7 @@ router.put('/:id/password', accountController.updatePassword);
 // DELETE account
 router.delete('/:id', accountController.deleteAccount);
 
-// PATCH toggle account status
-router.patch('/:id/toggle-status', accountController.toggleAccountStatus);
+// PUT toggle account status
+router.put('/:id/toggle-status', accountController.toggleAccountStatus);
 
 export default router;
