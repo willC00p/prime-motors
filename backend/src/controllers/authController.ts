@@ -102,5 +102,20 @@ export const authController = {
       console.error('Get current user error:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
+  },
+
+  getRotatingPassword: async (_req: Request, res: Response) => {
+    try {
+      const rotatingPassword = process.env.ROTATING_PASSWORD;
+      
+      if (!rotatingPassword) {
+        return res.status(500).json({ message: 'Rotating password not configured' });
+      }
+      
+      res.json({ password: rotatingPassword });
+    } catch (error) {
+      console.error('Get rotating password error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
   }
 };
