@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { generateToken, comparePassword } from '../utils/auth';
 import type { LoginCredentials, UserRole } from '../types/auth';
 import prisma from '../lib/prisma';
+import crypto from 'crypto';
 
 function isValidUserRole(role: string): role is UserRole {
   return ['gm', 'ceo', 'nsm', 'purchasing', 'accounting', 'finance', 'audit', 'branch'].includes(role);
@@ -106,13 +107,21 @@ export const authController = {
 
   getRotatingPassword: async (_req: Request, res: Response) => {
     try {
-      const rotatingPassword = process.env.ROTATING_PASSWORD;
+      // Generate a deterministic 8-character password based on today's date
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const secretKey = process.env.ROTATING_PASSWORD || 'default_secret';
       
-      if (!rotatingPassword) {
-        return res.status(500).json({ message: 'Rotating password not configured' });
-      }
+      // Create a hash using today's date and the secret key
+      const hash = crypto
+        .createHash('sha256')
+        .update(`${today}:${secretKey}`)
+        .digest('hex');
       
-      res.json({ password: rotatingPassword });
+      // Extract 8 alphanumeric characters (uppercase letters and numbers only)
+      const alphanumeric = hash.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+      const dailyPassword = alphanumeric.substring(0, 8);
+      
+      res.json({ password: dailyPassword });
     } catch (error) {
       console.error('Get rotating password error:', error);
       res.status(500).json({ message: 'Internal server error' });
