@@ -90,10 +90,20 @@ export const cibiApi = {
     const issues: string[] = [];
     const strengths: string[] = [];
 
-    const monthly_income = Number(params.monthly_income) || 0;
-    const estimated_monthly_expenses = Number(params.estimated_monthly_expenses) || 0;
+    // Safe number conversion - handles strings, null, undefined, objects
+    const toNumber = (val: any): number => {
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      if (typeof val === 'string') {
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? 0 : parsed;
+      }
+      return 0;
+    };
+
+    const monthly_income = toNumber(params.monthly_income);
+    const estimated_monthly_expenses = toNumber(params.estimated_monthly_expenses);
     const { existing_loan, previous_loans_status, credit_standing } = params;
-    const capacity_to_pay = Number(params.capacity_to_pay) || 0;
+    const capacity_to_pay = toNumber(params.capacity_to_pay);
 
     // Income Analysis
     if (monthly_income && monthly_income > 0) {
