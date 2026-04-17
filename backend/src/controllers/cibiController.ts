@@ -387,3 +387,25 @@ export const getApplication = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to fetch application" });
   }
 };
+
+// Get all available models from inventory
+export const getModels = async (req: Request, res: Response) => {
+  try {
+    const models = await prisma.items.findMany({
+      select: {
+        id: true,
+        item_no: true,
+        brand: true,
+        model: true,
+        color: true,
+        srp: true,
+      },
+      orderBy: { brand: "asc" },
+    });
+
+    res.json(models);
+  } catch (error) {
+    console.error("Error fetching models:", error);
+    res.status(500).json({ error: "Failed to fetch models" });
+  }
+};
