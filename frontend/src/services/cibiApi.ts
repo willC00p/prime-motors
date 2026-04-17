@@ -83,14 +83,17 @@ export const cibiApi = {
   },
 
   // Generate investigation findings
-  generateFindings: async (params: any) => {
+  generateFindings: (params: any) => {
     // This is a utility function that generates findings on the frontend
     // based on the parameters provided
     const findings: string[] = [];
     const issues: string[] = [];
     const strengths: string[] = [];
 
-    const { monthly_income, estimated_monthly_expenses, existing_loan, previous_loans_status, credit_standing, capacity_to_pay } = params;
+    const monthly_income = Number(params.monthly_income) || 0;
+    const estimated_monthly_expenses = Number(params.estimated_monthly_expenses) || 0;
+    const { existing_loan, previous_loans_status, credit_standing } = params;
+    const capacity_to_pay = Number(params.capacity_to_pay) || 0;
 
     // Income Analysis
     if (monthly_income && monthly_income > 0) {
@@ -134,20 +137,25 @@ export const cibiApi = {
       strengths.push("No existing loan obligations");
     }
 
-    // Combine findings
+    // Determine system recommendation
+    let system_recommendation = "";
     if (issues.length === 0 && strengths.length >= 4) {
-      findings.push("APPROVED - All criteria met");
+      system_recommendation = "APPROVED";
     } else if (issues.length <= 1 && strengths.length >= 2) {
-      findings.push("APPROVED WITH CONDITIONS - Minor concerns present");
+      system_recommendation = "APPROVED WITH CONDITIONS";
     } else if (issues.length >= 2 || strengths.length < 2) {
-      findings.push("FOR FURTHER EVALUATION - Requires additional review");
+      system_recommendation = "FOR FURTHER EVALUATION";
     }
 
-    findings.push("\nStrengths:\n• " + strengths.join("\n• "));
+    // Combine findings
+    findings.push("Strengths:\n• " + strengths.join("\n• "));
     if (issues.length > 0) {
       findings.push("\nConcerns:\n• " + issues.join("\n• "));
     }
 
-    return findings.join("\n");
+    return {
+      findings: findings.join("\n"),
+      system_recommendation,
+    };
   },
 };

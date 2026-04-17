@@ -96,6 +96,8 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
 
     // Auto-generate investigation findings if not provided
     let investigation_findings = data.investigation_findings;
+    let system_recommendation = data.system_recommendation;
+    
     if (!investigation_findings && (data.monthly_income || data.credit_standing)) {
       investigation_findings = generateInvestigationFindings({
         monthly_income: data.monthly_income,
@@ -105,24 +107,49 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
         credit_standing: data.credit_standing,
         capacity_to_pay: data.capacity_to_pay,
       });
+
+      // Extract system recommendation from findings
+      const recommendationMatch = investigation_findings.match(/\*\*System Recommendation:\*\*\s*([^-]+(?:-[^-]+)*)/);
+      if (recommendationMatch) {
+        system_recommendation = recommendationMatch[1].trim();
+      }
     }
 
     const cibiApplication = await prisma.cibi_applications.create({
       data: {
         ...data,
         investigation_findings,
+        system_recommendation: system_recommendation || data.system_recommendation,
         investigator_id: investigator_id || userId,
         branch_id: branch_id || (req as any).userBranchId,
         status: "Draft",
       },
       include: {
         attachments: true,
-        investigator: true,
-        unit_applied: true,
+        investigator: {
+          select: { id: true, username: true, name: true },
+        },
+        unit_applied: {
+          select: { id: true, item_no: true, brand: true, model: true },
+        },
       },
     });
 
-    res.status(201).json(cibiApplication);
+    // Serialize Decimal fields
+    const serialized = {
+      ...cibiApplication,
+      monthly_income: cibiApplication.monthly_income ? Number(cibiApplication.monthly_income) : null,
+      loan_amount: cibiApplication.loan_amount ? Number(cibiApplication.loan_amount) : null,
+      down_payment: cibiApplication.down_payment ? Number(cibiApplication.down_payment) : null,
+      monthly_amortization: cibiApplication.monthly_amortization ? Number(cibiApplication.monthly_amortization) : null,
+      rebate: cibiApplication.rebate ? Number(cibiApplication.rebate) : null,
+      existing_loan_amount: cibiApplication.existing_loan_amount ? Number(cibiApplication.existing_loan_amount) : null,
+      estimated_monthly_expenses: cibiApplication.estimated_monthly_expenses ? Number(cibiApplication.estimated_monthly_expenses) : null,
+      net_disposable_income: cibiApplication.net_disposable_income ? Number(cibiApplication.net_disposable_income) : null,
+      capacity_to_pay: cibiApplication.capacity_to_pay ? Number(cibiApplication.capacity_to_pay) : null,
+    };
+
+    res.status(201).json(serialized);
   } catch (error) {
     console.error("Error creating CI/BI application:", error);
     res.status(500).json({ error: "Failed to create CI/BI application" });
@@ -143,14 +170,31 @@ export const getAllCIBIApplications = async (req: Request, res: Response) => {
       where,
       include: {
         attachments: true,
-        investigator: true,
-        unit_applied: true,
-        application: true,
+        investigator: {
+          select: { id: true, username: true, name: true },
+        },
+        unit_applied: {
+          select: { id: true, item_no: true, brand: true, model: true },
+        },
       },
       orderBy: { created_at: "desc" },
     });
 
-    res.json(applications);
+    // Convert Decimal fields to numbers for JSON serialization
+    const serialized = applications.map((app: any) => ({
+      ...app,
+      monthly_income: app.monthly_income ? Number(app.monthly_income) : null,
+      loan_amount: app.loan_amount ? Number(app.loan_amount) : null,
+      down_payment: app.down_payment ? Number(app.down_payment) : null,
+      monthly_amortization: app.monthly_amortization ? Number(app.monthly_amortization) : null,
+      rebate: app.rebate ? Number(app.rebate) : null,
+      existing_loan_amount: app.existing_loan_amount ? Number(app.existing_loan_amount) : null,
+      estimated_monthly_expenses: app.estimated_monthly_expenses ? Number(app.estimated_monthly_expenses) : null,
+      net_disposable_income: app.net_disposable_income ? Number(app.net_disposable_income) : null,
+      capacity_to_pay: app.capacity_to_pay ? Number(app.capacity_to_pay) : null,
+    }));
+
+    res.json(serialized);
   } catch (error) {
     console.error("Error fetching CI/BI applications:", error);
     res.status(500).json({ error: "Failed to fetch CI/BI applications" });
@@ -166,9 +210,12 @@ export const getCIBIApplication = async (req: Request, res: Response) => {
       where: { id: parseInt(id) },
       include: {
         attachments: true,
-        investigator: true,
-        unit_applied: true,
-        application: true,
+        investigator: {
+          select: { id: true, username: true, name: true },
+        },
+        unit_applied: {
+          select: { id: true, item_no: true, brand: true, model: true },
+        },
       },
     });
 
@@ -176,7 +223,21 @@ export const getCIBIApplication = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "CI/BI application not found" });
     }
 
-    res.json(application);
+    // Serialize Decimal fields
+    const serialized = {
+      ...application,
+      monthly_income: application.monthly_income ? Number(application.monthly_income) : null,
+      loan_amount: application.loan_amount ? Number(application.loan_amount) : null,
+      down_payment: application.down_payment ? Number(application.down_payment) : null,
+      monthly_amortization: application.monthly_amortization ? Number(application.monthly_amortization) : null,
+      rebate: application.rebate ? Number(application.rebate) : null,
+      existing_loan_amount: application.existing_loan_amount ? Number(application.existing_loan_amount) : null,
+      estimated_monthly_expenses: application.estimated_monthly_expenses ? Number(application.estimated_monthly_expenses) : null,
+      net_disposable_income: application.net_disposable_income ? Number(application.net_disposable_income) : null,
+      capacity_to_pay: application.capacity_to_pay ? Number(application.capacity_to_pay) : null,
+    };
+
+    res.json(serialized);
   } catch (error) {
     console.error("Error fetching CI/BI application:", error);
     res.status(500).json({ error: "Failed to fetch CI/BI application" });
@@ -208,6 +269,12 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
         if (!data.investigation_findings) {
           data.investigation_findings = newFindings;
         }
+
+        // Extract system recommendation from findings
+        const recommendationMatch = newFindings.match(/\*\*System Recommendation:\*\*\s*([^-]+(?:-[^-]+)*)/);
+        if (recommendationMatch && !data.system_recommendation) {
+          data.system_recommendation = recommendationMatch[1].trim();
+        }
       }
     }
 
@@ -219,13 +286,30 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
       },
       include: {
         attachments: true,
-        investigator: true,
-        unit_applied: true,
-        application: true,
+        investigator: {
+          select: { id: true, username: true, name: true },
+        },
+        unit_applied: {
+          select: { id: true, item_no: true, brand: true, model: true },
+        },
       },
     });
 
-    res.json(application);
+    // Serialize Decimal fields
+    const serialized = {
+      ...application,
+      monthly_income: application.monthly_income ? Number(application.monthly_income) : null,
+      loan_amount: application.loan_amount ? Number(application.loan_amount) : null,
+      down_payment: application.down_payment ? Number(application.down_payment) : null,
+      monthly_amortization: application.monthly_amortization ? Number(application.monthly_amortization) : null,
+      rebate: application.rebate ? Number(application.rebate) : null,
+      existing_loan_amount: application.existing_loan_amount ? Number(application.existing_loan_amount) : null,
+      estimated_monthly_expenses: application.estimated_monthly_expenses ? Number(application.estimated_monthly_expenses) : null,
+      net_disposable_income: application.net_disposable_income ? Number(application.net_disposable_income) : null,
+      capacity_to_pay: application.capacity_to_pay ? Number(application.capacity_to_pay) : null,
+    };
+
+    res.json(serialized);
   } catch (error) {
     console.error("Error updating CI/BI application:", error);
     res.status(500).json({ error: "Failed to update CI/BI application" });
