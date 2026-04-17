@@ -12,7 +12,6 @@ model users {
   username  String    @unique @db.VarChar(50)
   password  String    @db.VarChar(100)
   role      String    @db.VarChar(20) @default("branch")
-  department String?   @db.VarChar(50)
   branchId  Int?
   name      String    @db.VarChar(100)
   email     String    @unique @db.VarChar(100)
