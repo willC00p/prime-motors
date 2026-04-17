@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authenticateToken } from "../lib/auth";
+import { authenticateToken } from "../utils/auth";
 import * as cibiController from "../controllers/cibiController";
 
 const router = Router();
