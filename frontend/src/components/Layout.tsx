@@ -38,6 +38,9 @@ export default function Layout({ children }: LayoutProps) {
     { to: '/presentation', label: 'Presentation', icon: Monitor },
     ...(user && canManageAccounts(user.role) 
       ? [{ to: '/accounts', label: 'Account Management', icon: Users }]
+      : []),
+    ...(user && ['investigator', 'gm', 'ceo', 'nsm'].includes(user.role)
+      ? [{ to: '/cibi-applications', label: 'CI/BI Applications', icon: FileSpreadsheet }]
       : [])
   ];
 

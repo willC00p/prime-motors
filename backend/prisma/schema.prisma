@@ -12,6 +12,7 @@ model users {
   username  String    @unique @db.VarChar(50)
   password  String    @db.VarChar(100)
   role      String    @db.VarChar(20) @default("branch")
+  department String?   @db.VarChar(50)
   branchId  Int?
   name      String    @db.VarChar(100)
   email     String    @unique @db.VarChar(100)
@@ -19,6 +20,10 @@ model users {
   createdAt DateTime  @default(now()) @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @db.Timestamptz(6)
   branch    branches? @relation(fields: [branchId], references: [id])
+  
+  cibi_applications cibi_applications[] @relation("cibi_investigator")
+  cibi_attachments cibi_attachments[]
+  applications applications[]
 
   @@index([branchId], map: "idx_users_branch")
 }
@@ -46,6 +51,8 @@ model branches {
   purchase_orders     purchase_orders[]
   sales               sales[]
   users               users[]
+  applications        applications[]
+  cibi_applications   cibi_applications[]
 }
 
 model inventory_movements {
@@ -94,6 +101,7 @@ model items {
   model_loan_templates model_loan_templates[]
   purchase_order_items purchase_order_items[]
   sales_items          sales_items[]
+  cibi_applications    cibi_applications[]
 }
 
 model payment_schedules {
@@ -327,4 +335,134 @@ model transferred_history {
   @@index([chassis_no])
   @@index([branch_id])
   @@index([item_id])
+}
+
+model applications {
+  id             Int       @id @default(autoincrement())
+  applicant_name String    @db.VarChar(255)
+  applicant_phone String?   @db.VarChar(20)
+  applicant_email String?   @db.VarChar(255)
+  status         String    @default("Application") @db.VarChar(50)
+  date_submitted DateTime  @default(now()) @db.Timestamptz(6)
+  branch_id      Int?
+  created_by     Int?
+  created_at     DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime  @updatedAt @db.Timestamptz(6)
+  
+  cibi_applications cibi_applications[]
+  branches       branches? @relation(fields: [branch_id], references: [id], onDelete: NoAction)
+  creator        users?    @relation(fields: [created_by], references: [id], onDelete: SetNull)
+
+  @@index([status], map: "idx_applications_status")
+  @@index([branch_id], map: "idx_applications_branch")
+}
+
+model cibi_applications {
+  id                         Int       @id @default(autoincrement())
+  
+  -- Applicant Info
+  full_name                  String    @db.VarChar(255)
+  present_address            String?
+  permanent_address          String?
+  same_address               Boolean   @default(false)
+  date_of_birth              DateTime? @db.Date
+  civil_status               String?   @db.VarChar(50)
+  valid_id                   String?   @db.VarChar(100)
+  tin_sss                    String?   @db.VarChar(50)
+  
+  -- Employment / Source of Income
+  employer_name              String?   @db.VarChar(255)
+  position                   String?   @db.VarChar(255)
+  length_of_service          String?   @db.VarChar(100)
+  monthly_income             Decimal?  @db.Decimal(12, 2)
+  employer_address           String?
+  contact_person             String?   @db.VarChar(255)
+  contact_person_phone       String?   @db.VarChar(20)
+  
+  -- Loan Details
+  loan_type                  String    @default("Motor Cycle Loan") @db.VarChar(100)
+  unit_applied_id            Int?
+  loan_amount                Decimal?  @db.Decimal(12, 2)
+  down_payment               Decimal?  @db.Decimal(12, 2)
+  term_months                Int?
+  monthly_amortization       Decimal?  @db.Decimal(12, 2)
+  rebate                     Decimal?  @db.Decimal(12, 2)
+  
+  -- Credit Background
+  existing_loan              Boolean?
+  creditor_name              String?   @db.VarChar(255)
+  existing_loan_amount       Decimal?  @db.Decimal(12, 2)
+  existing_loan_status       String?   @db.VarChar(50)
+  previous_loans_status      String?   @db.VarChar(50)
+  credit_standing            String?   @db.VarChar(50)
+  
+  -- Residence Verification
+  residence_type             String?   @db.VarChar(50)
+  length_of_stay             String?   @db.VarChar(100)
+  verified_by                String?   @db.VarChar(255)
+  residence_remarks          String?
+  
+  -- Character and Neighborhood Check
+  reference_person           String?   @db.VarChar(255)
+  reference_relationship     String?   @db.VarChar(100)
+  reference_feedback         String?
+  
+  -- Financial Capacity
+  estimated_monthly_expenses Decimal?  @db.Decimal(12, 2)
+  net_disposable_income      Decimal?  @db.Decimal(12, 2)
+  capacity_to_pay            Decimal?  @db.Decimal(12, 2)
+  sufficient_capacity        Boolean?
+  
+  -- Collateral / Comaker
+  comaker_name               String?   @db.VarChar(255)
+  comaker_relationship       String?   @db.VarChar(100)
+  comaker_contact            String?
+  comaker_financial_capacity String?
+  
+  -- Investigation Findings
+  investigation_findings     String?
+  
+  -- Recommendation
+  system_recommendation      String?   @db.VarChar(50)
+  manual_recommendation      String?   @db.VarChar(50)
+  recommendation_remarks     String?
+  
+  -- Prepared By
+  investigator_id            Int?
+  investigator_signature     String?   @db.VarChar(500)
+  prepared_date              DateTime  @default(now()) @db.Timestamptz(6)
+  
+  -- Status
+  status                     String    @default("Draft") @db.VarChar(50)
+  application_id             Int?
+  branch_id                  Int?
+  
+  created_at                 DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at                 DateTime  @updatedAt @db.Timestamptz(6)
+  
+  unit_applied               items?    @relation(fields: [unit_applied_id], references: [id], onDelete: SetNull)
+  investigator               users?    @relation("cibi_investigator", fields: [investigator_id], references: [id], onDelete: SetNull)
+  application                applications? @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  branch                     branches? @relation(fields: [branch_id], references: [id], onDelete: NoAction)
+  attachments                cibi_attachments[]
+
+  @@index([status], map: "idx_cibi_applications_status")
+  @@index([branch_id], map: "idx_cibi_applications_branch")
+  @@index([investigator_id], map: "idx_cibi_applications_investigator")
+}
+
+model cibi_attachments {
+  id                   Int       @id @default(autoincrement())
+  cibi_application_id  Int
+  attachment_type      String?   @db.VarChar(100)
+  file_path            String?   @db.VarChar(500)
+  file_name            String?   @db.VarChar(255)
+  file_size            Int?
+  uploaded_at          DateTime  @default(now()) @db.Timestamptz(6)
+  uploaded_by          Int?
+  
+  cibi_application     cibi_applications @relation(fields: [cibi_application_id], references: [id], onDelete: Cascade)
+  uploader             users?    @relation(fields: [uploaded_by], references: [id], onDelete: SetNull)
+
+  @@index([cibi_application_id])
 }

@@ -23,6 +23,7 @@ import authRouter from './routes/authRoutes';
 import reportsRouter from './routes/reports';
 import accountsRouter from './routes/accounts';
 import adminRouter from './routes/admin';
+import cibiRouter from './routes/cibiRoutes';
 import { updateSale } from './controllers/salesController';
 console.log('[Bootstrap] typeof salesRouter:', typeof salesRouter);
 console.log('[Bootstrap] typeof updateSale:', typeof updateSale);
@@ -88,6 +89,9 @@ apiRouter.use('/admin', adminRouter);
 
 // Account routes (HR management)
 apiRouter.use('/accounts', accountsRouter);
+
+// CI/BI routes
+apiRouter.use('/cibi', cibiRouter);
 
 // Core routes
 apiRouter.use('/inventory', inventoryRouter);
