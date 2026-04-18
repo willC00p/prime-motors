@@ -45,7 +45,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Basic route for testing
-app.get('/api/health', (_, res) => res.json({ status: 'ok' }));
+app.get('/api/health', (_, res) => res.json({ status: 'ok', version: '1.0.1', cibi: 'enabled' }));
 app.post('/api/echo', (req: Request, res: Response) => {
   console.log('Request body:', req.body);
   res.json(req.body);
