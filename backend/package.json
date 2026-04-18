@@ -15,6 +15,7 @@
     "db:purge:inventory": "ts-node ./scripts/purge-inventory.ts --yes",
     "db:purge:sales": "ts-node ./scripts/purge-sales.ts --yes",
     "db:sql": "ts-node ./scripts/apply-sql.ts",
+    "db:create:cibi": "ts-node ./scripts/create_cibi_tables.ts",
     "db:seed:branches": "node scripts/run-seed-branches.js",
     "seed:sales": "node scripts/run-sales-seeders.js",
     "seed:sales:undo": "node scripts/run-undo-sales-seeders.js",
