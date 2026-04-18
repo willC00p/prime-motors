@@ -24,6 +24,7 @@ import reportsRouter from './routes/reports';
 import accountsRouter from './routes/accounts';
 import adminRouter from './routes/admin';
 import cibiRouter from './routes/cibiRoutes';
+import leadsRouter from './routes/leadsRoutes';
 import { updateSale } from './controllers/salesController';
 console.log('[Bootstrap] typeof salesRouter:', typeof salesRouter);
 console.log('[Bootstrap] typeof updateSale:', typeof updateSale);
@@ -102,6 +103,9 @@ apiRouter.use('/accounts', accountsRouter);
 
 // CI/BI routes
 apiRouter.use('/cibi', cibiRouter);
+
+// Leads routes
+apiRouter.use('/leads', leadsRouter);
 
 // Core routes
 apiRouter.use('/inventory', inventoryRouter);
