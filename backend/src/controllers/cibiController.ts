@@ -95,16 +95,16 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
 
     // Helper function to safely convert values
-    const toNumber = (val: any): number | null => {
-      if (val === null || val === undefined || val === '') return null;
+    const toNumber = (val: any): number | undefined => {
+      if (val === null || val === undefined || val === '') return undefined;
       const num = Number(val);
-      return isNaN(num) ? null : num;
+      return isNaN(num) ? undefined : num;
     };
 
-    const toDate = (val: any): Date | null => {
-      if (!val) return null;
+    const toDate = (val: any): Date | undefined => {
+      if (!val) return undefined;
       const date = new Date(val);
-      return isNaN(date.getTime()) ? null : date;
+      return isNaN(date.getTime()) ? undefined : date;
     };
 
     // Convert string values to proper types
@@ -311,16 +311,16 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
     const { ...data } = req.body;
 
     // Helper function to safely convert values
-    const toNumber = (val: any): number | null => {
-      if (val === null || val === undefined || val === '') return null;
+    const toNumber = (val: any): number | undefined => {
+      if (val === null || val === undefined || val === '') return undefined;
       const num = Number(val);
-      return isNaN(num) ? null : num;
+      return isNaN(num) ? undefined : num;
     };
 
-    const toDate = (val: any): Date | null => {
-      if (!val) return null;
+    const toDate = (val: any): Date | undefined => {
+      if (!val) return undefined;
       const date = new Date(val);
-      return isNaN(date.getTime()) ? null : date;
+      return isNaN(date.getTime()) ? undefined : date;
     };
 
     // Convert string values to proper types
