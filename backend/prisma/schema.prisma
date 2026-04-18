@@ -24,6 +24,9 @@ model users {
   cibi_attachments        cibi_attachments[]
   applications_created    applications[] @relation("applications_creator")
   applications_investigator applications[] @relation("app_investigator")
+  applications_head_office_approver applications[] @relation("app_head_office_approver")
+  applications_branch_approver applications[] @relation("app_branch_approver")
+  requirement_attachments requirement_attachments[]
 
   @@index([branchId], map: "idx_users_branch")
 }
@@ -367,6 +370,33 @@ model applications {
   unit_released_at          DateTime?  @db.Timestamptz(6)
   sales_encoded_at          DateTime?  @db.Timestamptz(6)
   
+  // CI/BI Investigation Details
+  cibi_investigation_status String?    @db.VarChar(50) // IN_PROGRESS, APPROVED, DISAPPROVED, FURTHER_EVALUATION
+  cibi_investigation_notes  String?
+
+  // Head Office Approval
+  head_office_approved      Boolean    @default(false)
+  head_office_notes         String?
+  head_office_approved_by   Int?
+  head_office_approved_at   DateTime?  @db.Timestamptz(6)
+
+  // Branch Approval
+  branch_status             String?    @db.VarChar(50)
+  branch_notes              String?
+  branch_approved_by        Int?
+
+  // Client Notification
+  client_notification_status String?   @db.VarChar(50) // NOTIFIED, CLIENT_RESPONDED, CLIENT_NOT_RESPONDING
+
+  // Unit Release
+  unit_release_status       String?    @db.VarChar(50) // NOT_YET_RELEASED, RELEASED, DELIVERED
+
+  // Sales Encoding
+  sales_data                Json?
+
+  // Completion
+  lead_completed_at         DateTime?  @db.Timestamptz(6)
+  
   // Tracking
   assigned_investigator_id  Int?
   notes                     String?
@@ -375,14 +405,36 @@ model applications {
   updated_at                DateTime  @updatedAt @db.Timestamptz(6)
   
   cibi_applications         cibi_applications[]
+  requirement_attachments   requirement_attachments[]
   branches                  branches? @relation(fields: [branch_id], references: [id], onDelete: NoAction)
   creator                   users?    @relation("applications_creator", fields: [created_by], references: [id], onDelete: SetNull)
   investigator              users?    @relation("app_investigator", fields: [assigned_investigator_id], references: [id], onDelete: SetNull)
+  head_office_approver      users?    @relation("app_head_office_approver", fields: [head_office_approved_by], references: [id], onDelete: SetNull)
+  branch_approver           users?    @relation("app_branch_approver", fields: [branch_approved_by], references: [id], onDelete: SetNull)
 
   @@index([workflow_status], map: "idx_applications_workflow_status")
   @@index([status], map: "idx_applications_status")
   @@index([branch_id], map: "idx_applications_branch")
   @@index([cibi_sla_exceeded], map: "idx_applications_sla_exceeded")
+}
+
+model requirement_attachments {
+  id                Int       @id @default(autoincrement())
+  application_id    Int
+  file_name         String    @db.VarChar(255)
+  file_url          String?   @db.VarChar(500)
+  file_key          String?   @db.VarChar(500)
+  file_type         String?   @db.VarChar(50)
+  file_size         Int?
+  upload_type       String?   @db.VarChar(50) // PARTIAL, COMPLETE
+  uploaded_by       Int?
+  uploaded_at       DateTime  @default(now()) @db.Timestamptz(6)
+  created_at        DateTime  @default(now()) @db.Timestamptz(6)
+
+  applications      applications @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  uploader          users?       @relation(fields: [uploaded_by], references: [id], onDelete: SetNull)
+
+  @@index([application_id], map: "idx_requirement_attachments_app")
 }
 
 model cibi_applications {
