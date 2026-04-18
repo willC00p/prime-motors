@@ -175,6 +175,21 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
       }
     }
 
+    // First, create an application record in the applications table
+    const application = await prisma.applications.create({
+      data: {
+        applicant_name: processedData.full_name || '',
+        applicant_phone: data.applicant_phone,
+        applicant_email: data.applicant_email,
+        branch_id: branch_id || (req as any).userBranchId,
+        created_by: userId,
+        workflow_status: 'CI_BI',
+        cibi_started_at: new Date(),
+        assigned_investigator_id: investigator_id || userId,
+      },
+    });
+
+    // Then create the CI/BI application linked to the applications table
     const cibiApplication = await prisma.cibi_applications.create({
       data: {
         ...processedData,
@@ -183,6 +198,7 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
         investigator_id: investigator_id || userId,
         branch_id: branch_id || (req as any).userBranchId,
         status: "Draft",
+        application_id: application.id,
       },
       include: {
         attachments: true,
