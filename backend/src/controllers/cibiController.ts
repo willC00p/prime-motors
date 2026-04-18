@@ -94,18 +94,78 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
     const { investigator_id, branch_id, application_id, ...data } = req.body;
     const userId = (req as any).userId;
 
+    // Helper function to safely convert values
+    const toNumber = (val: any): number | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
+    const toDate = (val: any): Date | null => {
+      if (!val) return null;
+      const date = new Date(val);
+      return isNaN(date.getTime()) ? null : date;
+    };
+
+    // Convert string values to proper types
+    const processedData = {
+      full_name: data.full_name || '',
+      present_address: data.present_address,
+      permanent_address: data.permanent_address,
+      same_address: Boolean(data.same_address),
+      date_of_birth: toDate(data.date_of_birth),
+      civil_status: data.civil_status,
+      valid_id: data.valid_id,
+      tin_sss: data.tin_sss,
+      employer_name: data.employer_name,
+      position: data.position,
+      length_of_service: data.length_of_service,
+      monthly_income: toNumber(data.monthly_income),
+      employer_address: data.employer_address,
+      contact_person: data.contact_person,
+      contact_person_phone: data.contact_person_phone,
+      loan_type: data.loan_type || 'Motor Cycle Loan',
+      unit_applied_id: toNumber(data.unit_applied_id),
+      loan_amount: toNumber(data.loan_amount),
+      down_payment: toNumber(data.down_payment),
+      term_months: toNumber(data.term_months),
+      monthly_amortization: toNumber(data.monthly_amortization),
+      rebate: toNumber(data.rebate),
+      existing_loan: Boolean(data.existing_loan),
+      creditor_name: data.creditor_name,
+      existing_loan_amount: toNumber(data.existing_loan_amount),
+      existing_loan_status: data.existing_loan_status,
+      previous_loans_status: data.previous_loans_status,
+      credit_standing: data.credit_standing,
+      residence_type: data.residence_type,
+      length_of_stay: data.length_of_stay,
+      verified_by: data.verified_by,
+      residence_remarks: data.residence_remarks,
+      reference_person: data.reference_person,
+      reference_relationship: data.reference_relationship,
+      reference_feedback: data.reference_feedback,
+      estimated_monthly_expenses: toNumber(data.estimated_monthly_expenses),
+      net_disposable_income: toNumber(data.net_disposable_income),
+      capacity_to_pay: toNumber(data.capacity_to_pay),
+      sufficient_capacity: Boolean(data.sufficient_capacity),
+      comaker_name: data.comaker_name,
+      comaker_relationship: data.comaker_relationship,
+      comaker_contact: data.comaker_contact,
+      comaker_financial_capacity: data.comaker_financial_capacity,
+    };
+
     // Auto-generate investigation findings if not provided
     let investigation_findings = data.investigation_findings;
     let system_recommendation = data.system_recommendation;
     
-    if (!investigation_findings && (data.monthly_income || data.credit_standing)) {
+    if (!investigation_findings && (processedData.monthly_income || data.credit_standing)) {
       investigation_findings = generateInvestigationFindings({
-        monthly_income: data.monthly_income,
-        estimated_monthly_expenses: data.estimated_monthly_expenses,
-        existing_loan: data.existing_loan,
-        previous_loans_status: data.previous_loans_status,
-        credit_standing: data.credit_standing,
-        capacity_to_pay: data.capacity_to_pay,
+        monthly_income: processedData.monthly_income,
+        estimated_monthly_expenses: processedData.estimated_monthly_expenses,
+        existing_loan: processedData.existing_loan,
+        previous_loans_status: processedData.previous_loans_status,
+        credit_standing: processedData.credit_standing,
+        capacity_to_pay: processedData.capacity_to_pay,
       });
 
       // Extract system recommendation from findings
@@ -117,7 +177,7 @@ export const createCIBIApplication = async (req: Request, res: Response) => {
 
     const cibiApplication = await prisma.cibi_applications.create({
       data: {
-        ...data,
+        ...processedData,
         investigation_findings,
         system_recommendation: system_recommendation || data.system_recommendation,
         investigator_id: investigator_id || userId,
@@ -250,6 +310,74 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
     const { id } = req.params;
     const { ...data } = req.body;
 
+    // Helper function to safely convert values
+    const toNumber = (val: any): number | null => {
+      if (val === null || val === undefined || val === '') return null;
+      const num = Number(val);
+      return isNaN(num) ? null : num;
+    };
+
+    const toDate = (val: any): Date | null => {
+      if (!val) return null;
+      const date = new Date(val);
+      return isNaN(date.getTime()) ? null : date;
+    };
+
+    // Convert string values to proper types
+    const processedData: any = {};
+    
+    // Map and convert each field if present
+    if (data.full_name !== undefined) processedData.full_name = data.full_name;
+    if (data.present_address !== undefined) processedData.present_address = data.present_address;
+    if (data.permanent_address !== undefined) processedData.permanent_address = data.permanent_address;
+    if (data.same_address !== undefined) processedData.same_address = Boolean(data.same_address);
+    if (data.date_of_birth !== undefined) processedData.date_of_birth = toDate(data.date_of_birth);
+    if (data.civil_status !== undefined) processedData.civil_status = data.civil_status;
+    if (data.valid_id !== undefined) processedData.valid_id = data.valid_id;
+    if (data.tin_sss !== undefined) processedData.tin_sss = data.tin_sss;
+    if (data.employer_name !== undefined) processedData.employer_name = data.employer_name;
+    if (data.position !== undefined) processedData.position = data.position;
+    if (data.length_of_service !== undefined) processedData.length_of_service = data.length_of_service;
+    if (data.monthly_income !== undefined) processedData.monthly_income = toNumber(data.monthly_income);
+    if (data.employer_address !== undefined) processedData.employer_address = data.employer_address;
+    if (data.contact_person !== undefined) processedData.contact_person = data.contact_person;
+    if (data.contact_person_phone !== undefined) processedData.contact_person_phone = data.contact_person_phone;
+    if (data.loan_type !== undefined) processedData.loan_type = data.loan_type;
+    if (data.unit_applied_id !== undefined) processedData.unit_applied_id = toNumber(data.unit_applied_id);
+    if (data.loan_amount !== undefined) processedData.loan_amount = toNumber(data.loan_amount);
+    if (data.down_payment !== undefined) processedData.down_payment = toNumber(data.down_payment);
+    if (data.term_months !== undefined) processedData.term_months = toNumber(data.term_months);
+    if (data.monthly_amortization !== undefined) processedData.monthly_amortization = toNumber(data.monthly_amortization);
+    if (data.rebate !== undefined) processedData.rebate = toNumber(data.rebate);
+    if (data.existing_loan !== undefined) processedData.existing_loan = Boolean(data.existing_loan);
+    if (data.creditor_name !== undefined) processedData.creditor_name = data.creditor_name;
+    if (data.existing_loan_amount !== undefined) processedData.existing_loan_amount = toNumber(data.existing_loan_amount);
+    if (data.existing_loan_status !== undefined) processedData.existing_loan_status = data.existing_loan_status;
+    if (data.previous_loans_status !== undefined) processedData.previous_loans_status = data.previous_loans_status;
+    if (data.credit_standing !== undefined) processedData.credit_standing = data.credit_standing;
+    if (data.residence_type !== undefined) processedData.residence_type = data.residence_type;
+    if (data.length_of_stay !== undefined) processedData.length_of_stay = data.length_of_stay;
+    if (data.verified_by !== undefined) processedData.verified_by = data.verified_by;
+    if (data.residence_remarks !== undefined) processedData.residence_remarks = data.residence_remarks;
+    if (data.reference_person !== undefined) processedData.reference_person = data.reference_person;
+    if (data.reference_relationship !== undefined) processedData.reference_relationship = data.reference_relationship;
+    if (data.reference_feedback !== undefined) processedData.reference_feedback = data.reference_feedback;
+    if (data.estimated_monthly_expenses !== undefined) processedData.estimated_monthly_expenses = toNumber(data.estimated_monthly_expenses);
+    if (data.net_disposable_income !== undefined) processedData.net_disposable_income = toNumber(data.net_disposable_income);
+    if (data.capacity_to_pay !== undefined) processedData.capacity_to_pay = toNumber(data.capacity_to_pay);
+    if (data.sufficient_capacity !== undefined) processedData.sufficient_capacity = Boolean(data.sufficient_capacity);
+    if (data.comaker_name !== undefined) processedData.comaker_name = data.comaker_name;
+    if (data.comaker_relationship !== undefined) processedData.comaker_relationship = data.comaker_relationship;
+    if (data.comaker_contact !== undefined) processedData.comaker_contact = data.comaker_contact;
+    if (data.comaker_financial_capacity !== undefined) processedData.comaker_financial_capacity = data.comaker_financial_capacity;
+    if (data.investigation_findings !== undefined) processedData.investigation_findings = data.investigation_findings;
+    if (data.system_recommendation !== undefined) processedData.system_recommendation = data.system_recommendation;
+    if (data.manual_recommendation !== undefined) processedData.manual_recommendation = data.manual_recommendation;
+    if (data.recommendation_remarks !== undefined) processedData.recommendation_remarks = data.recommendation_remarks;
+    if (data.investigator_id !== undefined) processedData.investigator_id = toNumber(data.investigator_id);
+    if (data.investigator_signature !== undefined) processedData.investigator_signature = data.investigator_signature;
+    if (data.status !== undefined) processedData.status = data.status;
+
     // If key fields changed, regenerate findings
     if (data.monthly_income !== undefined || data.credit_standing !== undefined) {
       const existing = await prisma.cibi_applications.findUnique({
@@ -258,22 +386,22 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
 
       if (existing) {
         const newFindings = generateInvestigationFindings({
-          monthly_income: data.monthly_income || existing.monthly_income as any,
-          estimated_monthly_expenses: data.estimated_monthly_expenses || existing.estimated_monthly_expenses as any,
-          existing_loan: data.existing_loan !== undefined ? data.existing_loan : existing.existing_loan,
-          previous_loans_status: data.previous_loans_status || existing.previous_loans_status || undefined,
-          credit_standing: data.credit_standing || existing.credit_standing || undefined,
-          capacity_to_pay: data.capacity_to_pay || existing.capacity_to_pay as any,
+          monthly_income: processedData.monthly_income !== undefined ? processedData.monthly_income : existing.monthly_income as any,
+          estimated_monthly_expenses: processedData.estimated_monthly_expenses !== undefined ? processedData.estimated_monthly_expenses : existing.estimated_monthly_expenses as any,
+          existing_loan: processedData.existing_loan !== undefined ? processedData.existing_loan : existing.existing_loan,
+          previous_loans_status: processedData.previous_loans_status !== undefined ? processedData.previous_loans_status : existing.previous_loans_status || undefined,
+          credit_standing: processedData.credit_standing !== undefined ? processedData.credit_standing : existing.credit_standing || undefined,
+          capacity_to_pay: processedData.capacity_to_pay !== undefined ? processedData.capacity_to_pay : existing.capacity_to_pay as any,
         });
 
-        if (!data.investigation_findings) {
-          data.investigation_findings = newFindings;
+        if (!processedData.investigation_findings) {
+          processedData.investigation_findings = newFindings;
         }
 
         // Extract system recommendation from findings
         const recommendationMatch = newFindings.match(/\*\*System Recommendation:\*\*\s*([^-]+(?:-[^-]+)*)/);
-        if (recommendationMatch && !data.system_recommendation) {
-          data.system_recommendation = recommendationMatch[1].trim();
+        if (recommendationMatch && !processedData.system_recommendation) {
+          processedData.system_recommendation = recommendationMatch[1].trim();
         }
       }
     }
@@ -281,7 +409,7 @@ export const updateCIBIApplication = async (req: Request, res: Response) => {
     const application = await prisma.cibi_applications.update({
       where: { id: parseInt(id) },
       data: {
-        ...data,
+        ...processedData,
         updated_at: new Date(),
       },
       include: {
