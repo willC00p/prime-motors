@@ -3,7 +3,7 @@ import prisma from '../lib/prisma';
 
 /**
  * Update CI/BI Investigation Status
- * Investigator can approve/disapprove/mark for further evaluation
+ * All authenticated users can approve/disapprove/mark for further evaluation
  */
 export const updateCIBIInvestigation = async (req: Request, res: Response) => {
   try {
@@ -40,7 +40,7 @@ export const updateCIBIInvestigation = async (req: Request, res: Response) => {
 
 /**
  * Head Office Approval/Disapproval
- * CEO/GM/NSM can approve or disapprove applications
+ * CEO/GM/NSM can approve or disapprove applications (branch users cannot)
  */
 export const updateHeadOfficeApproval = async (req: Request, res: Response) => {
   try {
@@ -49,9 +49,9 @@ export const updateHeadOfficeApproval = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const userRole = (req as any).userRole;
 
-    // Only CEO, GM, NSM can approve
-    if (!['ceo', 'gm', 'nsm'].includes(userRole)) {
-      return res.status(403).json({ success: false, message: 'Unauthorized' });
+    // Branch users cannot approve at head office level
+    if (userRole === 'branch') {
+      return res.status(403).json({ success: false, message: 'Branch users cannot approve at head office level' });
     }
 
     const application = await prisma.applications.update({
@@ -79,7 +79,7 @@ export const updateHeadOfficeApproval = async (req: Request, res: Response) => {
 
 /**
  * Branch Approval
- * Branch manager can view details and approve
+ * All authenticated users can view details and approve
  */
 export const updateBranchApproval = async (req: Request, res: Response) => {
   try {
