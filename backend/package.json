@@ -20,7 +20,9 @@
     "seed:sales": "node scripts/run-sales-seeders.js",
     "seed:sales:undo": "node scripts/run-undo-sales-seeders.js",
     "audit:arrow-tm175": "ts-node scripts/migrate-arrow150-to-tm175.ts --dry-run",
-    "migrate:arrow-tm175": "ts-node scripts/migrate-arrow150-to-tm175.ts"
+    "migrate:arrow-tm175": "ts-node scripts/migrate-arrow150-to-tm175.ts",
+    "db:apply:workflow": "ts-node ./scripts/apply_workflow_migration.ts",
+    "check:sla": "ts-node ./scripts/check_sla.ts"
   },
   "keywords": [],
   "author": "",
