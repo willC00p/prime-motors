@@ -1,10 +1,10 @@
-import prisma from './backend/src/lib/prisma';
+import prisma from '../src/lib/prisma';
 import fs from 'fs';
 import path from 'path';
 
 async function createTables() {
   try {
-    const sqlPath = path.join(__dirname, 'create_cibi_tables.sql');
+    const sqlPath = path.join(__dirname, '../prisma/migrations/20250417_add_cibi_applications/migration.sql');
     const sql = fs.readFileSync(sqlPath, 'utf-8');
     
     // Split by semicolon and execute each statement
@@ -14,8 +14,16 @@ async function createTables() {
     
     for (const statement of statements) {
       if (statement.trim()) {
-        await prisma.$executeRawUnsafe(statement);
-        console.log('✅ Executed:', statement.substring(0, 50) + '...');
+        try {
+          await prisma.$executeRawUnsafe(statement);
+          console.log('✅ Executed:', statement.substring(0, 50) + '...');
+        } catch (error: any) {
+          if (error.code === 'P2010' && error.meta?.message?.includes('relation') && error.meta?.message?.includes('does not exist')) {
+            console.log('⏭️  Skipped (referenced table missing):', statement.substring(0, 50) + '...');
+          } else {
+            throw error;
+          }
+        }
       }
     }
     
