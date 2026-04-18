@@ -1,11 +1,11 @@
 import express from 'express';
 import * as leadsController from '../controllers/leadsController';
-import { verifyToken } from '../middleware/auth';
+import { authenticateToken } from '../utils/auth';
 
 const router = express.Router();
 
 // All routes require authentication
-router.use(verifyToken);
+router.use(authenticateToken);
 
 // Get all leads (main leads page data)
 router.get('/', leadsController.getAllLeads);

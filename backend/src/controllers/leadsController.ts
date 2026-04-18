@@ -291,8 +291,6 @@ export const getLeadDetail = async (req: Request, res: Response) => {
             manual_recommendation: true,
             investigation_findings: true,
             prepared_date: true,
-            cibi_started_at: true,
-            cibi_completed_at: true,
           },
         },
       },
