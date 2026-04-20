@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticateToken } from '../utils/auth';
 import {
+  proceedToRequirements,
   updateCIBIInvestigation,
   updateHeadOfficeApproval,
   updateBranchApproval,
@@ -20,6 +21,9 @@ router.use(authenticateToken);
 
 // Get application with full details
 router.get('/:id', getApplicationWithDetails);
+
+// Proceed from Leads to Requirements
+router.put('/:id/proceed-to-requirements', proceedToRequirements);
 
 // CI/BI Investigation
 router.put('/:id/cibi-investigation', updateCIBIInvestigation);

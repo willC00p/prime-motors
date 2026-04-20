@@ -2,6 +2,35 @@ import { Request, Response } from 'express';
 import prisma from '../lib/prisma';
 
 /**
+ * Proceed from LEADS to SUBMIT_REQS
+ * Move application to requirements submission stage
+ */
+export const proceedToRequirements = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { notes } = req.body;
+
+    const application = await prisma.applications.update({
+      where: { id: parseInt(id) },
+      data: {
+        workflow_status: 'SUBMIT_REQS',
+        notes: notes || undefined,
+      },
+      include: {
+        creator: true,
+        investigator: true,
+        branches: true,
+      },
+    });
+
+    res.json({ success: true, data: application, message: 'Application moved to requirements submission' });
+  } catch (error) {
+    console.error('Error proceeding to requirements:', error);
+    res.status(500).json({ success: false, message: 'Error proceeding to requirements' });
+  }
+};
+
+/**
  * Update CI/BI Investigation Status
  * All authenticated users can approve/disapprove/mark for further evaluation
  */

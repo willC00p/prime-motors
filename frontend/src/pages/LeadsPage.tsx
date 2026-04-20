@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, Search, Filter, AlertCircle, Clock, CheckCircle, MapPin } from 'lucide-react';
+import { ChevronDown, Search, AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import { getLeads, getLeadsSummary, updateLeadStatus } from '../services/leadsApi';
 
 interface Lead {

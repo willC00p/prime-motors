@@ -1,5 +1,5 @@
 import { fetchApi } from './api';
-import { CIBIApplicationResponse, ApplicationResponse } from '../types/cibi';
+import type { CIBIApplicationResponse } from '../types/cibi';
 
 export const cibiApi = {
   // CI/BI Applications
